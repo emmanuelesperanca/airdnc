@@ -280,11 +280,13 @@ async function confirmPresencePicker() {
     for (const date of dates) {
       await setMyPresence(_pickerType, date, /* silent */ true);
     }
-    // Show one final toast summarising all
+    // Toast final resumido
     const icon = _pickerType === 'home' ? '🏠' : _pickerType === 'fabrica' ? '🏭' : '⏱️';
     showToast(`${icon} ${p.label} registrado para ${label}!`, 3500);
     if (typeof renderPresenceSection === 'function') renderPresenceSection();
     if (typeof renderDesks === 'function') renderDesks();
+    // Recarrega do DB para mostrar dados consolidados de todos
+    if (typeof fetchTeamPresence === 'function') fetchTeamPresence(currentDate);
   }
 }
 
@@ -292,13 +294,38 @@ async function confirmPresencePicker() {
 async function _createRangeCalendarEvent(type, startDate, endDate) {
   const p     = PRESENCE_TYPES[type];
   const user  = state.user;
-  const paUrl = window.PA_CREATE_EVENT_URL || '';
 
-  const from = _fmtShort(startDate);
-  const to   = _fmtShort(endDate);
+  // 1. Persiste no DB via API imediatamente
+  const apiBase = window.API_BASE_URL || '';
+  if (apiBase && user && user.name) {
+    try {
+      await fetch(`${apiBase}/api/presence`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_email:    user.email || '',
+          user_name:     user.name,
+          department:    user.dept  || '',
+          team_name:     user.team  || '',
+          presence_type: type,
+          presence_date: startDate,
+          end_date:      endDate,
+          is_range:      true,
+          event_title:   `${p.eventTitle} - ${user.name.split(' ')[0]}`,
+          source:        'app'
+        })
+      });
+    } catch { /* não bloqueia */ }
+  }
+
+  // 2. Cria evento no Teams Calendar via Power Automate
+  const paUrl = window.PA_CREATE_EVENT_URL || '';
+  const from  = _fmtShort(startDate);
+  const to    = _fmtShort(endDate);
 
   if (!paUrl) {
-    showToast(`🏖️ ${p.label}: ${from} → ${to} registrado! (Configure PA_CREATE_EVENT_URL para sincronizar com o Teams)`, 5000);
+    showToast(`🏖️ ${p.label}: ${from} → ${to} salvo! (Configure PA_CREATE_EVENT_URL para sincronizar com o Teams)`, 5000);
+    await fetchTeamPresence(currentDate);
     return;
   }
 
@@ -321,9 +348,12 @@ async function _createRangeCalendarEvent(type, startDate, endDate) {
     if (resp.ok) {
       showToast(`🏖️ ${p.label} criado na agenda do Teams: ${from} → ${to}`, 4000);
     } else {
-      showToast(`${p.label} não pôde ser criado no Teams. Crie manualmente.`, 4000);
+      showToast(`${p.label} salvo no sistema. Falha no Teams — crie o evento manualmente.`, 4000);
     }
   } catch {
-    showToast(`${p.label} registrado. Sem conexão — crie o evento manualmente no Teams.`, 4000);
+    showToast(`${p.label} salvo no sistema. Crie o evento no Teams manualmente.`, 4000);
   }
+
+  // 3. Recarrega dados do dashboard do DB
+  await fetchTeamPresence(currentDate);
 }

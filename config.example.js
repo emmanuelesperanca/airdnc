@@ -21,7 +21,8 @@ window.API_BASE_URL = 'http://localhost:5000';
 // Cria um evento de dia inteiro na agenda do usuário
 window.PA_CREATE_EVENT_URL = 'https://PREENCHA_COM_URL_DO_FLOW_DE_EVENTO';
 
-// URL do fluxo PA para buscar presença de todas as equipes
-// Recebe: { date } → Retorna: { presence: { 'Nome': 'home'|'office'|'fabrica' },
-//                               teams:    { 'Time X': { home, fabrica, office, total } } }
-window.PA_PRESENCE_URL = 'https://PREENCHA_COM_URL_DO_FLOW_DE_PRESENCA';
+// [OPCIONAL] Fluxo PA agendado para importar eventos do Teams Calendar → banco de dados
+// Chamado 1x ao dia (ex: 7h) para sincronizar eventos criados fora do app.
+// O app NÃO usa mais esse URL para leitura — lê direto via API_BASE_URL/api/presence
+// Recebe: { records: [{user_email, user_name, team_name, presence_type, presence_date, ...}] }
+window.PA_PRESENCE_URL = ''; // Deixe vazio se não tiver o fluxo de sync agendado

@@ -3,5 +3,4 @@ uvicorn[standard]>=0.29.0
 PyJWT>=2.8.0
 python-dotenv>=1.0.0
 pydantic[email]>=2.7.0
-# pyodbc>=5.0.0      # Descomente para SQL Server
-# aioodbc>=0.5.0     # Alternativa async para SQL Server
+pyodbc>=5.0.0
