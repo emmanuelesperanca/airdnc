@@ -1,0 +1,456 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AirDnC – Azzurium, 2º Andar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<aside id="sidebar">
+  <div class="brand">
+    <div class="brand-icon">
+      <span class="material-symbols-outlined" style="color:#fff;font-size:20px;">desk</span>
+    </div>
+    <div>
+      <div class="font-manrope" style="font-size:18px;font-weight:800;color:#1e2a30;">AirDnC</div>
+      <div style="font-size:11px;color:#94a3b8;font-weight:600;">Azzurium · 2º Andar</div>
+    </div>
+  </div>
+  <nav style="padding:12px 0;flex:1;">
+    <a href="#" data-page="dashboard" onclick="navigate('dashboard');return false;">
+      <span class="material-symbols-outlined">dashboard</span> Dashboard
+    </a>
+    <a href="#" data-page="floormap" onclick="navigate('floormap');return false;" class="active">
+      <span class="material-symbols-outlined">map</span> Mapa do Andar
+    </a>
+    <a href="#" data-page="bookings" onclick="navigate('bookings');return false;">
+      <span class="material-symbols-outlined">event_available</span> Reservas
+    </a>
+    <a href="#" data-page="settings" onclick="navigate('settings');return false;">
+      <span class="material-symbols-outlined">settings</span> Configurações
+    </a>
+  </nav>
+  <div style="padding:16px 10px;border-top:1px solid #f0f4f7;">
+    <a href="#" onclick="openUserModal();return false;" style="display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:10px;cursor:pointer;transition:background .15s;text-decoration:none;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+      <div id="sidebar-avatar" style="width:34px;height:34px;border-radius:50%;background:#565e74;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;font-family:'Manrope',sans-serif;flex-shrink:0;">?</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div id="sidebar-name" style="font-size:13px;font-weight:700;color:#1e2a30;">Não identificado</div>
+          <span id="admin-badge" class="admin-badge">ADMIN</span>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;">Ver perfil</div>
+      </div>
+    </a>
+  </div>
+</aside>
+
+<!-- ═══════════════════════ TOPBAR ═══════════════════════ -->
+<header id="topbar">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div id="page-title" class="font-manrope" style="font-size:17px;font-weight:800;color:#1e2a30;">Mapa do Andar</div>
+    <div style="display:flex;align-items:center;gap:8px;background:#f1f5f9;border-radius:10px;padding:7px 14px;cursor:pointer;" onclick="toggleDatePicker()">
+      <span class="material-symbols-outlined" style="font-size:17px;color:#565e74;">calendar_today</span>
+      <span id="date-label" style="font-size:13px;font-weight:600;color:#566166;"></span>
+      <span class="material-symbols-outlined" style="font-size:16px;color:#94a3b8;">expand_more</span>
+    </div>
+    <input type="date" id="date-picker" style="display:none;padding:7px 10px;border:1.5px solid #d1dae0;border-radius:8px;font-size:13px;" oninput="onDateChange(this.value)"/>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button onclick="navigate('bookings')" style="position:relative;background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+      <span class="material-symbols-outlined" style="color:#566166;">notifications</span>
+      <span id="notif-badge" style="position:absolute;top:7px;right:7px;width:8px;height:8px;background:#ef4444;border-radius:50%;display:none;"></span>
+    </button>
+    <div id="topbar-avatar" onclick="openUserModal()" style="width:34px;height:34px;border-radius:50%;background:#565e74;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;font-family:'Manrope',sans-serif;cursor:pointer;">?</div>
+  </div>
+</header>
+
+<!-- ═══════════════════════ PAGE: FLOOR MAP ═══════════════════════ -->
+<div id="page-floormap" class="page active">
+  <div id="floor-area" style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+  <!-- Filter Bar -->
+  <div id="filter-bar">
+    <span class="filter-label">Filtrar por:</span>
+    <!-- chips injected by JS -->
+    <button id="filter-clear-btn" onclick="clearFilters()">
+      <span class="material-symbols-outlined" style="font-size:13px;vertical-align:middle;">close</span>Limpar
+    </button>
+  </div>
+  <div id="floorCanvas">
+    <div id="floorPlan">
+
+      <!-- ── OUTER BOUNDARY ── -->
+      <!-- Top wall -->
+      <div class="wall h" style="top:10px;left:10px;right:10px;"></div>
+      <!-- Bottom wall -->
+      <div class="wall h" style="bottom:10px;left:10px;right:10px;"></div>
+      <!-- Left wall -->
+      <div class="wall v" style="top:10px;left:10px;bottom:10px;"></div>
+      <!-- Right wall -->
+      <div class="wall v" style="top:10px;right:10px;bottom:10px;"></div>
+
+      <!-- ── MEETING ROOM (top-left) ── -->
+      <div class="room meeting" style="left:10px;top:110px;width:300px;height:140px;">
+        <div style="text-align:center;">
+          <div style="font-size:13px;font-weight:800;color:#4a5167;">Sala de Reuniões</div>
+          <div style="font-size:12px;color:#7b8fa0;margin-top:2px;">Fernando de Noronha</div>
+        </div>
+      </div>
+
+      <!-- ── COPA (top-center) ── -->
+      <div class="room copa" style="left:310px;top:110px;width:75px;height:140px;">
+        <div style="font-size:12px;font-weight:800;color:#2d6a4f;">Copa</div>
+      </div>
+
+      <!-- ── TECH POINT (top-right) ── -->
+      <div class="room techpoint" style="left:460px;top:170px;width:40px;height:80px;">
+        <div style="text-align:center;font-size:11px;font-weight:800;color:#5b21b6;">Tech<br>Point</div>
+      </div>
+
+      <!-- Pilaster below tech point -->
+      <div class="pilaster" style="right:310px;top:230px;width:50px;height:20px;"></div>
+
+      <!-- ── HORIZONTAL DIVIDER WALL (separates meeting area from open floor) ── -->
+      <div class="wall h" style="left:460px;top:170px;width:390px;"></div>
+
+      <!-- ── VERTICAL DIVIDER (right side separator) ── -->
+      <!-- <div class="wall v" style="left:560px;top:10px;height:210px;"></div> -->
+
+      <!-- ── DOOR / PORTA FORA ── -->
+      <div class="door-rect" style="left:10px;top:290px;width:6px;height:50px;border-radius:3px;"></div>
+      <div class="door-label" style="left:20px;top:290px;">Porta Fora</div>
+
+      <!-- Windows label -->
+      <div class="windows-label">Janelas</div>
+
+      <!-- ═══ DESK CLUSTERS ═══ -->
+      <!-- NOTE: The JS will inject desks. We define positions here via data-desk on placeholders -->
+
+    </div><!-- /floorPlan -->
+
+    <!-- Zoom controls -->
+    <div id="zoomControls">
+      <button class="zoom-btn" onclick="zoom(1.15)" title="Zoom In"><span class="material-symbols-outlined">add</span></button>
+      <button class="zoom-btn" onclick="zoom(0.87)" title="Zoom Out"><span class="material-symbols-outlined">remove</span></button>
+      <button class="zoom-btn" onclick="resetZoom()" title="Reset"><span class="material-symbols-outlined">center_focus_strong</span></button>
+    </div>
+
+    <!-- Legend -->
+    <div id="legend">
+      <h5>Status</h5>
+      <div class="legend-row"><div class="legend-dot" style="background:#22c55e;"></div><span id="leg-available">Disponível</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#f59e0b;"></div><span id="leg-reserved">Reservada</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#ef4444;"></div><span id="leg-occupied">Ocupada</span></div>
+      <div class="legend-row"><div class="legend-dot" style="background:#6366f1;"></div><span id="leg-mine">Minha Mesa</span></div>
+    </div>
+  </div><!-- /floorCanvas -->
+  </div><!-- /floor-area -->
+
+  <!-- Info Panel -->
+  <div id="infoPanel">
+    <div id="info-empty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#b0bec7;text-align:center;">
+      <span class="material-symbols-outlined" style="font-size:48px;">touch_app</span>
+      <div style="font-size:14px;font-weight:600;">Clique em uma mesa para ver detalhes e reservar</div>
+    </div>
+    <div id="info-content" style="display:none;flex-direction:column;gap:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <h3 id="info-name">Mesa 01</h3>
+          <div id="info-status-badge" style="margin-top:4px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;"></div>
+        </div>
+        <button onclick="closeInfoPanel()" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:20px;" title="Fechar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div id="info-owner-row" style="display:none;align-items:center;gap:10px;background:#f8fafc;border-radius:10px;padding:12px;">
+        <div id="info-owner-avatar" style="width:36px;height:36px;border-radius:50%;background:#565e74;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;font-family:'Manrope',sans-serif;flex-shrink:0;"></div>
+        <div>
+          <div id="info-owner-name" style="font-size:13px;font-weight:700;color:#1e2a30;"></div>
+          <div id="info-owner-subtitle" style="font-size:11px;color:#94a3b8;">Responsável pela mesa</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:800;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;font-family:'Manrope',sans-serif;">Equipamentos</div>
+        <div id="info-amenities"></div>
+        <div id="info-no-amenities" style="font-size:13px;color:#b0bec7;display:none;">Nenhum equipamento cadastrado.</div>
+      </div>
+
+      <div id="info-notes-row" style="display:none;">
+        <div style="font-size:11px;font-weight:800;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;font-family:'Manrope',sans-serif;">Observações</div>
+        <p id="info-notes" style="font-size:13px;color:#566166;background:#f8fafc;border-radius:8px;padding:10px;"></p>
+      </div>
+
+      <div id="info-avail-row" style="display:none;">
+        <div style="font-size:11px;font-weight:800;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;font-family:'Manrope',sans-serif;">Disponibilização</div>
+        <div id="info-avail-summary" class="avail-summary none"><span style="font-size:12px;color:#94a3b8;font-weight:600;">Não disponibilizada</span></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:auto;">
+        <button id="btn-book" class="btn-primary" onclick="bookDesk()" style="display:none;">Reservar Mesa</button>
+        <button id="btn-cancel-booking" class="btn-danger" onclick="cancelBooking()" style="display:none;">Cancelar Reserva</button>
+        <button id="btn-list" class="btn-secondary" onclick="openListModal()" style="display:none;">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:4px;">event_available</span>Gerenciar Disponibilização
+        </button>
+        <button id="btn-unlist" class="btn-danger" onclick="clearAvailability()" style="display:none;">Remover Toda Disponibilização</button>
+        <button id="btn-edit" class="btn-secondary" onclick="openEditModal()" style="display:none;">
+          <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:4px;">edit</span>Editar Mesa
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PAGE: DASHBOARD ═══════════════════════ -->
+<div id="page-dashboard" class="page" style="flex-direction:column;padding:28px;gap:24px;overflow-y:auto;">
+  <div id="dash-welcome" class="font-manrope" style="font-size:24px;font-weight:800;color:#1e2a30;">Bom dia! 👋</div>
+
+  <!-- Stats row -->
+  <div style="display:flex;gap:16px;flex-wrap:wrap;">
+    <div class="stat-card" style="border-left:4px solid #22c55e;">
+      <div class="stat-value" style="color:#22c55e;" id="stat-available">0</div>
+      <div class="stat-label">Disponíveis hoje</div>
+    </div>
+    <div class="stat-card" style="border-left:4px solid #f59e0b;">
+      <div class="stat-value" style="color:#f59e0b;" id="stat-reserved">0</div>
+      <div class="stat-label">Reservadas hoje</div>
+    </div>
+    <div class="stat-card" style="border-left:4px solid #ef4444;">
+      <div class="stat-value" style="color:#ef4444;" id="stat-occupied">0</div>
+      <div class="stat-label">Ocupadas hoje</div>
+    </div>
+    <div class="stat-card" style="border-left:4px solid #6366f1;">
+      <div class="stat-value" style="color:#6366f1;" id="stat-total">0</div>
+      <div class="stat-label">Total de mesas</div>
+    </div>
+  </div>
+
+  <!-- My desk / my booking -->
+  <div id="dash-mydesk-section">
+    <div class="font-manrope" style="font-size:16px;font-weight:800;margin-bottom:12px;">Minha Situação Hoje</div>
+    <div id="dash-mydesk-card" style="background:#fff;border-radius:14px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;gap:20px;align-items:center;flex-wrap:wrap;"></div>
+  </div>
+
+  <!-- Upcoming bookings -->
+  <div>
+    <div class="font-manrope" style="font-size:16px;font-weight:800;margin-bottom:12px;">Próximas Reservas</div>
+    <div id="dash-upcoming" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PAGE: BOOKINGS ═══════════════════════ -->
+<div id="page-bookings" class="page" style="flex-direction:column;padding:28px;gap:20px;overflow-y:auto;">
+  <div class="font-manrope" style="font-size:22px;font-weight:800;color:#1e2a30;">Todas as Reservas</div>
+  <div style="overflow-x:auto;">
+    <table id="bookings-table">
+      <thead>
+        <tr>
+          <th>Mesa</th>
+          <th>Reservante</th>
+          <th>Data</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="bookings-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PAGE: SETTINGS ═══════════════════════ -->
+<div id="page-settings" class="page" style="flex-direction:column;padding:28px;gap:24px;overflow-y:auto;">
+  <div class="font-manrope" style="font-size:22px;font-weight:800;color:#1e2a30;">Configurações</div>
+
+  <div class="settings-section">
+    <h3>Meu Perfil</h3>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="form-group">
+        <label>Nome completo</label>
+        <input type="text" id="settings-name" placeholder="Ex: João Silva"/>
+      </div>
+      <div class="form-group">
+        <label>Departamento</label>
+        <input type="text" id="settings-dept" placeholder="Ex: Engenharia"/>
+      </div>
+      <div class="form-group">
+        <label>Minha Mesa (número)</label>
+        <select id="settings-mydesk">
+          <option value="">-- Selecione --</option>
+        </select>
+      </div>
+      <button class="btn-primary" style="width:auto;padding:11px 24px;" onclick="saveSettings()">Salvar Perfil</button>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h3>Preferências</h3>
+    <div class="toggle-row">
+      <span style="font-size:14px;font-weight:600;">Notificações de reserva</span>
+      <label class="toggle"><input type="checkbox" id="pref-notif" checked/><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span style="font-size:14px;font-weight:600;">Lembrete 1h antes</span>
+      <label class="toggle"><input type="checkbox" id="pref-reminder"/><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span style="font-size:14px;font-weight:600;">Política de Mesa Limpa</span>
+      <label class="toggle"><input type="checkbox" id="pref-cleandesk" checked/><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h3>Sobre o AirDnC</h3>
+    <p style="font-size:14px;color:#566166;line-height:1.6;">
+      AirDnC é uma plataforma de mobilidade corporativa interna inspirada no modelo de economia compartilhada.
+      Permite que colaboradores disponibilizem suas estações de trabalho quando estiverem em home office ou em
+      outra unidade, e reservem espaços adequados ao visitar diferentes sites da empresa.
+    </p>
+    <div style="margin-top:12px;font-size:12px;color:#94a3b8;font-weight:600;">Versão 1.0 POC · Azzurium 2º Andar</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MODAL: EDIT DESK ═══════════════════════ -->
+<div id="modal-overlay" onclick="closeModalOnOverlay(event)">
+  <div id="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h2 id="modal-title">Editar Mesa</h2>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;"><span class="material-symbols-outlined">close</span></button>
+    </div>
+
+    <div class="form-group">
+      <label>Responsável pela mesa</label>
+      <input type="text" id="modal-owner" placeholder="Nome do colaborador"/>
+    </div>
+
+    <!-- Sections rendered dynamically from JS constants -->
+    <div id="modal-equipment-sections" style="display:flex;flex-direction:column;gap:12px;"></div>
+
+    <div class="form-group">
+      <label>Observações</label>
+      <input type="text" id="modal-notes" placeholder="Ex: Mesa próxima à janela, vista agradável"/>
+    </div>
+
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeModal()" style="flex:1;">Cancelar</button>
+      <button class="btn-primary" onclick="saveEdit()" style="flex:2;">Salvar Alterações</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MODAL: DISPONIBILIZAR MESA ═══════════════════════ -->
+<div id="list-modal-overlay" onclick="closeListModalOnOverlay(event)" style="position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(4px);z-index:100;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px;">
+  <div id="list-modal" style="background:#fff;border-radius:16px;width:520px;max-width:98vw;padding:28px 28px 24px;box-shadow:0 24px 60px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:18px;margin:auto;">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h2 id="list-modal-desk-name" style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;">Disponibilizar Mesa</h2>
+      <button onclick="closeListModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;"><span class="material-symbols-outlined">close</span></button>
+    </div>
+
+    <p style="font-size:13px;color:#566166;margin-top:-8px;">Escolha em quais dias sua mesa ficará disponível para reserva. Nos demais dias, aparecerá como ocupada.</p>
+
+    <!-- Tabs -->
+    <div class="list-tabs">
+      <button class="list-tab active" data-tab="specific" onclick="switchListTab('specific')">
+        <span class="material-symbols-outlined" style="font-size:15px;vertical-align:middle;margin-right:4px;">calendar_month</span>Datas Específicas
+      </button>
+      <button class="list-tab" data-tab="recurring" onclick="switchListTab('recurring')">
+        <span class="material-symbols-outlined" style="font-size:15px;vertical-align:middle;margin-right:4px;">repeat</span>Recorrência Semanal
+      </button>
+    </div>
+
+    <!-- Tab: Datas Específicas -->
+    <div id="list-tab-specific" style="display:flex;flex-direction:column;gap:14px;">
+      <div style="font-size:12px;color:#566166;font-weight:600;">Clique nos dias que deseja disponibilizar a mesa:</div>
+      <!-- Mini Calendar -->
+      <div class="mini-cal-header">
+        <button class="mini-cal-nav" onclick="calPrevMonth()">&#8249;</button>
+        <span id="cal-month-label">Abril 2026</span>
+        <button class="mini-cal-nav" onclick="calNextMonth()">&#8250;</button>
+      </div>
+      <div id="cal-grid" class="cal-grid"></div>
+      <!-- Selected chips -->
+      <div>
+        <div style="font-size:11px;font-weight:800;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;font-family:'Manrope',sans-serif;">Datas selecionadas</div>
+        <div id="selected-dates-chips" class="date-chips"></div>
+      </div>
+    </div>
+
+    <!-- Tab: Recorrência -->
+    <div id="list-tab-recurring" style="display:none;flex-direction:column;gap:16px;">
+      <div>
+        <div style="font-size:12px;color:#566166;font-weight:600;margin-bottom:10px;">Selecione os dias da semana:</div>
+        <div id="weekday-pills-container" class="weekday-pills"></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:800;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;font-family:'Manrope',sans-serif;">Período (opcional)</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <div class="form-group" style="flex:1;min-width:140px;">
+            <label>De</label>
+            <input type="date" id="rec-start-date" oninput="renderAvailPreview()"/>
+          </div>
+          <div class="form-group" style="flex:1;min-width:140px;">
+            <label>Até</label>
+            <input type="date" id="rec-end-date" oninput="renderAvailPreview()"/>
+          </div>
+        </div>
+        <p style="font-size:11px;color:#94a3b8;margin-top:6px;">Deixe em branco para recorrência sem data fim.</p>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div>
+      <div style="font-size:11px;font-weight:800;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;font-family:'Manrope',sans-serif;">Resumo da Disponibilização</div>
+      <div id="list-avail-preview" class="avail-preview-box">Nenhuma data selecionada ainda.</div>
+    </div>
+
+    <!-- Buttons -->
+    <div style="display:flex;gap:10px;padding-top:4px;">
+      <button class="btn-secondary" onclick="closeListModal()" style="flex:1;">Cancelar</button>
+      <button class="btn-primary" onclick="saveAvailability()" style="flex:2;">
+        <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-right:4px;">save</span>Salvar Disponibilização
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MODAL: USER PROFILE ═══════════════════════ -->
+<div id="user-modal-overlay" onclick="closeUserModalOnOverlay(event)" style="position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;width:400px;max-width:95vw;padding:32px;box-shadow:0 24px 60px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h2 style="font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;">Identificação Rápida</h2>
+      <button onclick="closeUserModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <p style="font-size:13px;color:#566166;">Informe seu nome para continuar usando o AirDnC. Isso será salvo localmente.</p>
+    <div class="form-group">
+      <label>Seu nome</label>
+      <input type="text" id="quick-name" placeholder="Ex: Maria Costa"/>
+    </div>
+    <div class="form-group">
+      <label>Departamento</label>
+      <input type="text" id="quick-dept" placeholder="Ex: Comercial"/>
+    </div>
+    <div class="form-group">
+      <label>Minha mesa</label>
+      <select id="quick-mydesk"><option value="">-- Nenhuma --</option></select>
+    </div>
+    <button class="btn-primary" onclick="saveQuickProfile()">Confirmar</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ TOAST ═══════════════════════ -->
+<div id="toast" style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e2a30;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:600;font-family:'Manrope',sans-serif;z-index:200;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;"></div>
+
+<script src="js/data.js"></script>
+<script src="js/equipment.js"></script>
+<script src="js/filters.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/modals.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
