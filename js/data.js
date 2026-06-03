@@ -98,6 +98,19 @@ const FILTER_CHIPS = [
     test: am => (am.ergonomia||[]).includes('braco-monitor') },
 ];
 
+// ─── Team colour palette ───
+const TEAM_COLORS = {
+  'Nathalia':         '#22c55e',
+  'Time da Vanessa':  '#3b82f6',
+  'Time do Carlos':   '#f97316',
+  'Time da Barbara':  '#ec4899',
+  'Time da Gabriela': '#8b5cf6',
+  'Time da Dexian':   '#14b8a6',
+  'Time do Mikado':   '#dc2626',
+  'Marinho':          '#d97706',
+  'Barbara Terra':    '#6366f1',
+};
+
 // ═══════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════

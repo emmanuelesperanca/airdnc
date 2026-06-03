@@ -12,9 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshDashboard();
   refreshBookingsTable();
 
-  // Show user modal if no name set
-  if (!state.user.name) {
-    setTimeout(() => openUserModal(), 400);
+  // Show login screen if no valid session
+  if (!checkLoginSession()) {
+    showLoginScreen();
   }
 });
 

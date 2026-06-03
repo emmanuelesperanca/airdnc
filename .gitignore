@@ -1,0 +1,20 @@
+# Credenciais e configurações locais — NUNCA commitar
+config.js
+.env
+.env.*
+!.env.example
+
+# Dependências
+node_modules/
+
+# Outputs de build
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db

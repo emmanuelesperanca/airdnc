@@ -47,6 +47,9 @@
         <div style="font-size:11px;color:#94a3b8;">Ver perfil</div>
       </div>
     </a>
+    <button class="logout-btn" onclick="doLogout()">
+      <span class="material-symbols-outlined" style="font-size:15px;">logout</span>Sair
+    </button>
   </div>
 </aside>
 
@@ -443,14 +446,44 @@
   </div>
 </div>
 
+<!-- ═══════════════════════ LOGIN OVERLAY ═══════════════════════ -->
+<div id="login-overlay">
+  <div class="login-card">
+    <div style="width:64px;height:64px;background:#565e74;border-radius:18px;display:flex;align-items:center;justify-content:center;">
+      <span class="material-symbols-outlined" style="font-size:34px;color:#fff;">desk</span>
+    </div>
+    <h1 style="font-family:'Manrope',sans-serif;font-size:26px;font-weight:800;color:#1e2a30;margin:0;">AirDnC</h1>
+    <p style="font-size:13px;color:#94a3b8;margin:0;">Azzurium · 2º Andar</p>
+    <div style="width:100%;border-top:1px solid #f0f4f7;"></div>
+    <div style="display:flex;align-items:center;gap:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;width:100%;box-sizing:border-box;">
+      <span class="material-symbols-outlined" style="font-size:20px;color:#2563eb;flex-shrink:0;">groups</span>
+      <span style="font-size:12px;font-weight:700;color:#1d4ed8;">Validação via Microsoft Teams</span>
+    </div>
+    <div style="width:100%;display:flex;flex-direction:column;gap:6px;">
+      <label style="font-size:13px;font-weight:700;color:#566166;">E-mail corporativo</label>
+      <input type="email" id="login-email" class="login-input" placeholder="nome@straumann.com"
+        onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button id="login-btn" class="login-btn" onclick="doLogin()">Entrar</button>
+    <div id="login-spinner" style="display:none;align-items:center;justify-content:center;gap:8px;color:#94a3b8;font-size:13px;">
+      <span class="material-symbols-outlined spin" style="font-size:17px;">progress_activity</span>
+      Validando com o Teams...
+    </div>
+    <div id="login-message" class="login-message" style="display:none;"></div>
+    <p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:4px;">Straumann Group · Acesso restrito a colaboradores</p>
+  </div>
+</div>
+
 <!-- ═══════════════════════ TOAST ═══════════════════════ -->
 <div id="toast" style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e2a30;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:600;font-family:'Manrope',sans-serif;z-index:200;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;"></div>
 
+<script src="config.js" onerror="console.warn('AirDnC: config.js n\u00e3o encontrado \u2014 URLs do Power Automate n\u00e3o configuradas')"></script>
 <script src="js/data.js"></script>
 <script src="js/equipment.js"></script>
 <script src="js/filters.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/modals.js"></script>
+<script src="js/login.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

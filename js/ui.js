@@ -78,17 +78,20 @@ function renderDesks() {
     btn.style.cssText = `top:${d.top}px;left:${d.left}px;`;
 
     const amenityIcon = hasEquipment(deskData.amenities) ? 'desktop_windows' : 'desk';
-    const ownerTag = deskData.owner
-      ? `<span class="desk-owner-name">${deskData.owner}</span>`
-      : (deskData.hotDesk ? `<span class="desk-owner-name" style="color:#10b981;">&#x2736; Rotativa</span>` : '');
+    const teamColor = TEAM_COLORS[deskData.owner] || '#94a3b8';
+    const booking = state.bookings.find(b => b.deskId === d.id && b.date === currentDate && b.status !== 'cancelled');
+    const subTag = booking
+      ? `<span class="desk-booker">${booking.bookedBy}</span>`
+      : (deskData.owner ? `<span class="desk-owner-name">${deskData.owner}</span>` : '');
     if (deskData.hotDesk) btn.dataset.hotdesk = 'true';
-    btn.title = `${d.label}${deskData.owner ? ' · ' + deskData.owner : ''} — ${getDeskStatusLabel(status)}`;
+    btn.title = `${d.label}${deskData.owner ? ' · ' + deskData.owner : ''}${booking ? ' – ' + booking.bookedBy : ''} — ${getDeskStatusLabel(status)}`;
 
     btn.innerHTML = `
       <div class="dot"></div>
+      <div class="team-strip" style="background:${teamColor};"></div>
       <span class="material-symbols-outlined desk-icon">${amenityIcon}</span>
       <span class="desk-name">${d.label}</span>
-      ${ownerTag}
+      ${subTag}
     `;
     btn.addEventListener('click', () => selectDesk(d.id));
     fp.appendChild(btn);
@@ -142,10 +145,11 @@ function refreshInfoPanel() {
   const ownerSubtitle = document.getElementById('info-owner-subtitle');
   if (desk.hotDesk) {
     ownerRow.style.display = 'flex';
+    const teamColor = TEAM_COLORS[desk.owner] || '#6366f1';
     document.getElementById('info-owner-name').textContent = desk.owner || 'Mesa Rotativa';
     ownerAvatarEl.textContent = desk.owner ? desk.owner.charAt(0).toUpperCase() : '✶';
-    ownerAvatarEl.style.background = desk.owner ? '#6366f1' : '#10b981';
-    ownerAvatarEl.style.fontSize = desk.owner ? '' : '18px';
+    ownerAvatarEl.style.background = teamColor;
+    ownerAvatarEl.style.fontSize = '';
     if (ownerSubtitle) ownerSubtitle.textContent = desk.owner
       ? `Mesa rotativa — ${desk.owner}`
       : 'Disponível todos os dias úteis';
