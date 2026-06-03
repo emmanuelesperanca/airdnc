@@ -220,3 +220,162 @@ async function sendAuditEvent(payload) {
     });
   } catch { /* falhas de auditoria não bloqueiam o app */ }
 }
+// ── Presença: define o status do usuário logado para uma data ──────────────────────────────
+async function setMyPresence(type, date) {
+  if (!state.user || !state.user.name) {
+    showToast('Faça login para registrar sua presença.');
+    return;
+  }
+
+  const prev = ((state.presence || {})[date] || {})[state.user.name];
+  if (!state.presence[date]) state.presence[date] = {};
+  state.presence[date][state.user.name] = type;
+  saveState();
+
+  // Atualiza dashboard e mapa imediatamente
+  if (typeof renderPresenceSection === 'function') renderPresenceSection();
+  if (typeof renderDesks === 'function') renderDesks();
+
+  const p = PRESENCE_TYPES[type];
+  if (type === 'office') {
+    showToast(`✅ Status atualizado: ${p.label}`);
+    // Se havia um evento criado pelo app, poderia cancelar — por simplicidade, apenas notifica
+    if (prev && prev !== 'office') {
+      showToast('Lembre-se de remover o evento da sua agenda no Teams se necessário.', 4000);
+    }
+    return;
+  }
+
+  // Para home/fábrica: cria evento na agenda do Teams via Power Automate
+  await createCalendarEvent(type, date);
+}
+
+// ── Cria evento de dia-inteiro na agenda do Teams via Power Automate ───────────────────────
+async function createCalendarEvent(type, date) {
+  const p     = PRESENCE_TYPES[type];
+  const user  = state.user;
+  const paUrl = window.PA_CREATE_EVENT_URL || '';
+
+  const dateFormatted = new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {
+    weekday: 'long', day: 'numeric', month: 'long'
+  });
+
+  if (!paUrl) {
+    // Modo dev: simula sucesso
+    showToast(`${type === 'home' ? '🏠' : '🏭'} ${p.label} registrado para ${dateFormatted}!`);
+    return;
+  }
+
+  try {
+    const resp = await fetch(paUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        email:      user.email || '',
+        user_name:  user.name,
+        type,
+        date,
+        event_title: `${p.eventTitle} - ${user.name.split(' ')[0]}`,
+        app: 'airdnc'
+      })
+    });
+
+    if (resp.ok) {
+      showToast(`${type === 'home' ? '🏠' : '🏭'} Evento criado na sua agenda do Teams para ${dateFormatted}!`);
+      sendAuditEvent({ type: 'calendar_event_created', email: user.email, status: 'success',
+        user_name: user.name, event_type: type, event_date: date });
+    } else {
+      showToast('Presença registrada, mas falha ao criar evento no Teams. Crie manualmente.', 4000);
+    }
+  } catch {
+    showToast('Presença registrada localmente. Sem conexão com o Teams agora.', 3500);
+  }
+}
+
+// ── Busca presença de todas as equipes via Power Automate ──────────────────────────────────
+async function fetchTeamPresence(date) {
+  const btn = document.getElementById('btn-refresh-presence');
+  const paUrl = window.PA_PRESENCE_URL || '';
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined spin" style="font-size:14px;">progress_activity</span>Buscando...';
+  }
+
+  // Sem URL: aplica dados auto-relatados (state.presence) como fonte de equipes
+  if (!paUrl) {
+    _applyLocalPresenceToTeams(date);
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;">refresh</span>Atualizar'; }
+    renderPresenceSection();
+    showToast('Dados de presença das equipes atualizados (local).');
+    return;
+  }
+
+  try {
+    const resp = await fetch(paUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ date, app: 'airdnc' })
+    });
+
+    if (!resp.ok) throw new Error(`PA respondeu ${resp.status}`);
+    const data = await resp.json();
+
+    // Estrutura esperada do PA: { presence: { 'Nome': 'home'|'fabrica'|'office', ... },
+    //                             teams: { 'Time X': { home, fabrica, office, total }, ... } }
+    if (data.presence) {
+      if (!state.presence[date]) state.presence[date] = {};
+      Object.assign(state.presence[date], data.presence);
+    }
+    if (data.teams) {
+      if (!state.teamPresence) state.teamPresence = {};
+      if (!state.teamPresence[date]) state.teamPresence[date] = {};
+      Object.assign(state.teamPresence[date], data.teams);
+    }
+    state.teamPresenceLoadedAt = new Date().toISOString();
+    saveState();
+    renderPresenceSection();
+    renderDesks();
+    showToast('Presença das equipes atualizada!');
+
+  } catch (err) {
+    _applyLocalPresenceToTeams(date);
+    showToast('Não foi possível conectar ao Teams. Mostrando dados locais.', 3500);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;">refresh</span>Atualizar'; }
+    renderPresenceSection();
+  }
+}
+
+// Agrega state.presence (auto-relatados) em state.teamPresence para exibição
+function _applyLocalPresenceToTeams(date) {
+  const dayPres = (state.presence || {})[date] || {};
+  if (!state.teamPresence) state.teamPresence = {};
+  if (!state.teamPresence[date]) state.teamPresence[date] = {};
+
+  // Conta por equipe a partir das mesas (DUMMY_DESKS → owner → team)
+  const teamCounts = {};
+  const deskMap = {};
+  // Monta mapa nome → equipe para as mesas do andar
+  if (typeof DUMMY_DESKS !== 'undefined') {
+    DUMMY_DESKS.forEach(({ owner }) => {
+      if (!teamCounts[owner]) teamCounts[owner] = { home: 0, fabrica: 0, office: 0, total: 0 };
+    });
+    // Conta mesas por equipe
+    DUMMY_DESKS.forEach(({ owner }) => teamCounts[owner].total++);
+  }
+
+  // Aplica presenças conhecidas
+  Object.entries(dayPres).forEach(([name, status]) => {
+    if (teamCounts[name]) {
+      // É um nome de equipe direto — improvável mas tratado
+      teamCounts[name][status] = (teamCounts[name][status] || 0) + 1;
+    }
+    // Verifica se o nome é de um membro individual ligado a um team
+    // (Para a versão completa, isso viria do PA)
+  });
+
+  Object.assign(state.teamPresence[date], teamCounts);
+  state.teamPresenceLoadedAt = new Date().toISOString();
+  saveState();
+}

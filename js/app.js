@@ -127,7 +127,7 @@ canvas.addEventListener('wheel', e => { e.preventDefault(); zoom(e.deltaY<0?1.08
 //  TOAST
 // ═══════════════════════════════════════════════════════
 let toastTimer;
-function showToast(msg) {
+function showToast(msg, duration = 3000) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.style.opacity = '1';
@@ -136,5 +136,5 @@ function showToast(msg) {
   toastTimer = setTimeout(() => {
     t.style.opacity = '0';
     t.style.transform = 'translateX(-50%) translateY(20px)';
-  }, 3000);
+  }, duration);
 }

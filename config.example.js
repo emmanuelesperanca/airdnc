@@ -16,3 +16,12 @@ window.PA_AUDIT_URL = '';
 // Desenvolvimento local:  'http://localhost:5000'
 // Produção:              'https://api.suaempresa.com'
 window.API_BASE_URL = 'http://localhost:5000';
+// URL do fluxo PA para criar eventos de dia-inteiro na agenda do Teams
+// Recebe: { email, user_name, type: 'home'|'fabrica', date, event_title }
+// Cria um evento de dia inteiro na agenda do usuário
+window.PA_CREATE_EVENT_URL = 'https://PREENCHA_COM_URL_DO_FLOW_DE_EVENTO';
+
+// URL do fluxo PA para buscar presença de todas as equipes
+// Recebe: { date } → Retorna: { presence: { 'Nome': 'home'|'office'|'fabrica' },
+//                               teams:    { 'Time X': { home, fabrica, office, total } } }
+window.PA_PRESENCE_URL = 'https://PREENCHA_COM_URL_DO_FLOW_DE_PRESENCA';

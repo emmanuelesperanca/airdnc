@@ -363,6 +363,59 @@ input:checked + .slider:before { transform:translateX(20px); }
 /* Preview box */
 .avail-preview-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:9px; padding:10px 14px; font-size:12px; color:#566166; font-weight:600; min-height:36px; }
 
+/* ── Away pip on fixed-desk buttons ── */
+.desk-away-pip {
+  position: absolute;
+  top: 5px; left: 5px;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  border: 1.5px solid #d1dae0;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+}
+.desk[data-owneraway="home"]    .desk-away-pip { border-color:#3b82f6; background:#eff6ff; }
+.desk[data-owneraway="fabrica"] .desk-away-pip { border-color:#f97316; background:#fff7ed; }
+
+/* ── Presence section on Dashboard ── */
+.presence-quick-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border: 1.5px solid #e2e8f0;
+  border-radius: 10px; background: #f8fafc;
+  font-size: 13px; font-weight: 700; font-family: 'Manrope', sans-serif;
+  color: #566166; cursor: pointer; transition: all .15s;
+}
+.presence-quick-btn:hover { border-color: #a5b4fc; background: #f5f3ff; color: #4338ca; }
+.presence-quick-btn.pqb-active { box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+
+.fixed-owner-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px; border: 1.5px solid #e2e8f0;
+  border-radius: 10px; flex-wrap: wrap;
+}
+
+.team-pres-row {
+  display: flex; align-items: center; gap: 12px; padding: 6px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.team-pres-row:last-child { border-bottom: none; }
+.pres-bar-wrap {
+  flex: 1; height: 8px; background: #f1f5f9;
+  border-radius: 4px; overflow: hidden;
+}
+.pres-bar { height: 100%; border-radius: 4px; transition: width .4s; }
+.pres-compliance {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 8px; border-radius: 6px;
+  font-size: 11px; font-weight: 800; font-family: 'Manrope', sans-serif;
+  white-space: nowrap;
+}
+.pres-compliance.ok   { background: #dcfce7; color: #15803d; }
+.pres-compliance.warn { background: #fef3c7; color: #92400e; }
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin .7s linear infinite; }
+
 /* ── Login Screen ── */
 #login-overlay {
   position: fixed; inset: 0;

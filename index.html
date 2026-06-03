@@ -50,6 +50,24 @@
     <button class="logout-btn" onclick="doLogout()">
       <span class="material-symbols-outlined" style="font-size:15px;">logout</span>Sair
     </button>
+    <!-- Quick presence shortcuts -->
+    <div style="padding:8px 10px 6px;display:flex;gap:6px;">
+      <button title="Marcar Home Office hoje" onclick="setMyPresence('home', currentDate)" id="sidebar-btn-home"
+        style="flex:1;padding:7px 4px;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;font-size:10px;font-weight:800;font-family:'Manrope',sans-serif;color:#1d4ed8;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;"
+        onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+        <span class="material-symbols-outlined" style="font-size:16px;">home_work</span>Home
+      </button>
+      <button title="Marcar ida à Fábrica hoje" onclick="setMyPresence('fabrica', currentDate)" id="sidebar-btn-fabrica"
+        style="flex:1;padding:7px 4px;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:8px;font-size:10px;font-weight:800;font-family:'Manrope',sans-serif;color:#c2410c;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;"
+        onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background='#fff7ed'">
+        <span class="material-symbols-outlined" style="font-size:16px;">factory</span>Fábrica
+      </button>
+      <button title="Marcar presença no escritório" onclick="setMyPresence('office', currentDate)" id="sidebar-btn-office"
+        style="flex:1;padding:7px 4px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;font-size:10px;font-weight:800;font-family:'Manrope',sans-serif;color:#15803d;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;"
+        onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
+        <span class="material-symbols-outlined" style="font-size:16px;">business</span>Escrit.
+      </button>
+    </div>
   </div>
 </aside>
 
@@ -245,6 +263,9 @@
     <div class="font-manrope" style="font-size:16px;font-weight:800;margin-bottom:12px;">Próximas Reservas</div>
     <div id="dash-upcoming" style="display:flex;flex-direction:column;gap:10px;"></div>
   </div>
+
+  <!-- Presence / Teams Calendar -->
+  <div id="dash-presence-section"></div>
 </div>
 
 <!-- ═══════════════════════ PAGE: BOOKINGS ═══════════════════════ -->

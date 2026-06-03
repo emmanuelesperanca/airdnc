@@ -111,6 +111,32 @@ const TEAM_COLORS = {
   'Barbara Terra':    '#6366f1',
 };
 
+// ─── Pessoas com mesa fixa ───
+// Quando estão em Home/Fábrica, a mesa delas fica explícita como disponível no mapa
+const FIXED_DESK_USERS = {
+  'Nathalia':      1,
+  'Marinho':       5,
+  'Barbara Terra': 19,
+};
+
+// ─── Mínimo de pessoas fora do escritório por equipe ───
+// Times grandes (≥5 mesas): 2 | Times menores (2–4): 1
+const TEAM_MIN_AWAY = {
+  'Time da Vanessa':  2,
+  'Time do Carlos':   2,
+  'Time da Gabriela': 2,
+  'Time da Barbara':  1,
+  'Time do Mikado':   1,
+};
+
+// ─── Tipos de presença ───
+// eventTitle = prefixo usado nos eventos de dia-inteiro do Teams Calendar
+const PRESENCE_TYPES = {
+  office:  { label: 'Escritório', icon: 'business', color: '#22c55e', eventTitle: null },
+  home:    { label: 'Home Office', icon: 'home_work', color: '#3b82f6', eventTitle: 'Home Office' },
+  fabrica: { label: 'Fábrica',    icon: 'factory',  color: '#f97316', eventTitle: 'Fábrica' },
+};
+
 // ═══════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════
@@ -136,6 +162,9 @@ if (!state.desks) {
 }
 if (!state.bookings) state.bookings = [];
 if (!state.user) state.user = { name: '', dept: '', myDesk: '' };
+if (!state.presence) state.presence = {};
+if (!state.teamPresence) state.teamPresence = {};
+if (!state.teamPresenceLoadedAt) state.teamPresenceLoadedAt = null;
 
 // Ensure all desks from current layout exist (migration for newly added desks)
 DESK_LAYOUT.forEach(d => {

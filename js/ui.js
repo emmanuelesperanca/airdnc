@@ -86,12 +86,22 @@ function renderDesks() {
     if (deskData.hotDesk) btn.dataset.hotdesk = 'true';
     btn.title = `${d.label}${deskData.owner ? ' · ' + deskData.owner : ''}${booking ? ' – ' + booking.bookedBy : ''} — ${getDeskStatusLabel(status)}`;
 
+    // Away indicator for fixed-desk owners
+    const awayStatus = isOwnerAway(d.id); // 'home' | 'fabrica' | null
+    if (awayStatus) btn.dataset.owneraway = awayStatus;
+    const awayTag = awayStatus
+      ? `<span class="desk-away-pip" title="${deskData.owner} está ${awayStatus === 'home' ? 'em Home Office' : 'na Fábrica'} hoje">
+           <span class="material-symbols-outlined" style="font-size:9px;">${awayStatus === 'home' ? 'home_work' : 'factory'}</span>
+         </span>`
+      : '';
+
     btn.innerHTML = `
       <div class="dot"></div>
       <div class="team-strip" style="background:${teamColor};"></div>
       <span class="material-symbols-outlined desk-icon">${amenityIcon}</span>
       <span class="desk-name">${d.label}</span>
       ${subTag}
+      ${awayTag}
     `;
     btn.addEventListener('click', () => selectDesk(d.id));
     fp.appendChild(btn);
@@ -102,7 +112,18 @@ function renderDesks() {
 }
 
 // ═══════════════════════════════════════════════════════
-//  INFO PANEL
+//  PRESENCE HELPERS
+// ═══════════════════════════════════════════════════════
+
+// Retorna 'home' | 'fabrica' se o dono da mesa fixa está fora hoje, ou null.
+function isOwnerAway(deskId) {
+  const entry = Object.entries(FIXED_DESK_USERS).find(([, id]) => id === deskId);
+  if (!entry) return null;
+  const status = ((state.presence || {})[currentDate] || {})[entry[0]];
+  return (status === 'home' || status === 'fabrica') ? status : null;
+}
+
+// ═══════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════
 function selectDesk(id) {
   selectedDeskId = id;
@@ -391,6 +412,9 @@ function refreshDashboard() {
       upcoming.appendChild(d);
     });
   }
+
+  // Presence section
+  renderPresenceSection();
 }
 
 function cancelBookingById(bookingId) {
@@ -433,6 +457,120 @@ function refreshBookingsTable() {
     `;
     tbody.appendChild(tr);
   });
+}
+
+// ═══════════════════════════════════════════════════════
+//  PRESENCE SECTION (Dashboard)
+// ═══════════════════════════════════════════════════════
+
+function renderPresenceSection() {
+  const el = document.getElementById('dash-presence-section');
+  if (!el) return;
+
+  const user       = state.user;
+  const todayPres  = (state.presence || {})[currentDate] || {};
+  const myStatus   = user.name ? (todayPres[user.name] || 'office') : 'office';
+  const teamPres   = (state.teamPresence || {})[currentDate] || {};
+  const hasTeamData = Object.keys(teamPres).length > 0;
+  const loadedAt   = state.teamPresenceLoadedAt;
+  const loadedLabel = loadedAt
+    ? `Atualizado às ${new Date(loadedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`
+    : 'Não carregado';
+
+  // ── Quick status buttons ──
+  const quickBtns = Object.entries(PRESENCE_TYPES).map(([type, p]) => {
+    const active = myStatus === type;
+    return `<button onclick="setMyPresence('${type}','${currentDate}')"
+      class="presence-quick-btn${active ? ' pqb-active' : ''}"
+      style="${active ? `background:${p.color};color:#fff;border-color:${p.color};` : ''}">
+      <span class="material-symbols-outlined" style="font-size:16px;">${p.icon}</span>
+      ${p.label}
+    </button>`;
+  }).join('');
+
+  // ── Fixed desk owners ──
+  const fixedRows = Object.entries(FIXED_DESK_USERS).map(([name, deskId]) => {
+    const st   = todayPres[name] || 'office';
+    const p    = PRESENCE_TYPES[st];
+    const isMe = user.name === name;
+    return `<div class="fixed-owner-chip" style="border-color:${p.color}20;background:${p.color}10;">
+      <span class="material-symbols-outlined" style="font-size:14px;color:${p.color};">${p.icon}</span>
+      <span style="font-size:12px;font-weight:700;color:#1e2a30;">${name.split(' ')[0]}${isMe ? ' (eu)' : ''}</span>
+      <span style="font-size:11px;color:${p.color};font-weight:700;">· ${p.label}</span>
+      ${st !== 'office' ? `<span style="font-size:10px;background:#fff3cd;color:#856404;border-radius:4px;padding:1px 5px;font-weight:800;">Mesa ${deskId < 10 ? '0'+deskId : deskId} livre!</span>` : ''}
+    </div>`;
+  }).join('');
+
+  // ── Team compliance rows ──
+  let teamRowsHTML = '';
+  if (hasTeamData) {
+    teamRowsHTML = Object.entries(TEAM_MIN_AWAY).map(([team, minAway]) => {
+      const d   = teamPres[team] || { home: 0, fabrica: 0, office: 0, total: 0 };
+      const away = (d.home || 0) + (d.fabrica || 0);
+      const total = d.total || 0;
+      const ok  = away >= minAway;
+      const pct = total > 0 ? Math.round((away / total) * 100) : 0;
+      const tc  = TEAM_COLORS[team] || '#94a3b8';
+      return `<div class="team-pres-row">
+        <div style="display:flex;align-items:center;gap:8px;min-width:140px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:${tc};flex-shrink:0;"></div>
+          <span style="font-size:12px;font-weight:700;color:#1e2a30;">${team.replace('Time d','T.')}</span>
+        </div>
+        <div class="pres-bar-wrap">
+          <div class="pres-bar" style="width:${pct}%;background:${tc};"></div>
+        </div>
+        <div style="font-size:12px;color:#566166;min-width:70px;">${away}/${total} fora</div>
+        <span class="pres-compliance ${ok ? 'ok' : 'warn'}">
+          <span class="material-symbols-outlined" style="font-size:13px;">${ok ? 'check_circle' : 'warning'}</span>
+          ${ok ? 'OK' : `Falta ${minAway - away}`}
+        </span>
+      </div>`;
+    }).join('');
+  } else {
+    teamRowsHTML = `<div style="font-size:13px;color:#94a3b8;padding:12px 0;">
+      Clique em <strong>Atualizar</strong> para carregar os dados de presença de todas as equipes do calendário do Teams.
+    </div>`;
+  }
+
+  el.innerHTML = `
+    <!-- Meu Status -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="font-manrope" style="font-size:16px;font-weight:800;">Meu Status Hoje</div>
+    </div>
+    <div style="background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">${quickBtns}</div>
+      <p style="font-size:11px;color:#94a3b8;margin:0;">
+        Ao marcar <strong>Home Office</strong> ou <strong>Fábrica</strong>, um evento de dia inteiro é criado
+        automaticamente na sua agenda do Microsoft Teams.
+      </p>
+    </div>
+
+    <!-- Mesas fixas -->
+    <div class="font-manrope" style="font-size:16px;font-weight:800;margin:20px 0 12px;">Mesas Fixas Hoje</div>
+    <div style="background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">${fixedRows}</div>
+      <p style="font-size:11px;color:#94a3b8;margin:12px 0 0;">
+        Quando Nathalia, Marinho ou Barbara Terra marcam Home/Fábrica, uma indicação aparece na mesa
+        deles no mapa do andar.
+      </p>
+    </div>
+
+    <!-- Presença das equipes -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:20px 0 12px;">
+      <div class="font-manrope" style="font-size:16px;font-weight:800;">Presença das Equipes</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:11px;color:#94a3b8;">${loadedLabel}</span>
+        <button id="btn-refresh-presence" onclick="fetchTeamPresence('${currentDate}')"
+          style="display:flex;align-items:center;gap:4px;padding:6px 12px;background:#f1f5f9;border:1.5px solid #d1dae0;border-radius:8px;font-size:12px;font-weight:700;font-family:'Manrope',sans-serif;color:#566166;cursor:pointer;"
+          onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+          <span class="material-symbols-outlined" style="font-size:14px;">refresh</span>Atualizar
+        </button>
+      </div>
+    </div>
+    <div style="background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+      <div style="display:flex;flex-direction:column;gap:10px;">${teamRowsHTML}</div>
+    </div>
+  `;
 }
 
 // ═══════════════════════════════════════════════════════
