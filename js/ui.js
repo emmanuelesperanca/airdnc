@@ -477,14 +477,32 @@ function renderPresenceSection() {
     ? `Atualizado às ${new Date(loadedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`
     : 'Não carregado';
 
-  // ── Quick status buttons ──
-  const quickBtns = Object.entries(PRESENCE_TYPES).map(([type, p]) => {
+  // ── Quick status buttons (escritório/home/fábrica — status do dia selecionado) ──
+  // office = direto (sem picker), home e fabrica = abre picker
+  const STATUS_TYPES = ['office', 'home', 'fabrica'];
+  const quickBtns = STATUS_TYPES.map(type => {
+    const p = PRESENCE_TYPES[type];
     const active = myStatus === type;
-    return `<button onclick="setMyPresence('${type}','${currentDate}')"
+    const action = type === 'office'
+      ? `setMyPresence('office','${currentDate}')`
+      : `openPresencePicker('${type}')`;
+    return `<button onclick="${action}"
       class="presence-quick-btn${active ? ' pqb-active' : ''}"
       style="${active ? `background:${p.color};color:#fff;border-color:${p.color};` : ''}">
       <span class="material-symbols-outlined" style="font-size:16px;">${p.icon}</span>
       ${p.label}
+    </button>`;
+  }).join('');
+
+  // ── Eventos Teams (banco + férias) ──
+  const EVENT_TYPES = ['banco', 'ferias'];
+  const eventBtns = EVENT_TYPES.map(type => {
+    const p = PRESENCE_TYPES[type];
+    return `<button onclick="openPresencePicker('${type}')"
+      class="presence-quick-btn"
+      style="border-color:${p.color}40;">
+      <span class="material-symbols-outlined" style="font-size:16px;color:${p.color};">${p.icon}</span>
+      <span style="color:${p.color};">${p.label}</span>
     </button>`;
   }).join('');
 
@@ -535,13 +553,20 @@ function renderPresenceSection() {
   el.innerHTML = `
     <!-- Meu Status -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div class="font-manrope" style="font-size:16px;font-weight:800;">Meu Status Hoje</div>
+      <div class="font-manrope" style="font-size:16px;font-weight:800;">Meu Status — ${new Date(currentDate+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'short'})}</div>
     </div>
     <div style="background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:14px;">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">${quickBtns}</div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Status do dia</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">${quickBtns}</div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Criar evento no Teams</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">${eventBtns}</div>
+      </div>
       <p style="font-size:11px;color:#94a3b8;margin:0;">
-        Ao marcar <strong>Home Office</strong> ou <strong>Fábrica</strong>, um evento de dia inteiro é criado
-        automaticamente na sua agenda do Microsoft Teams.
+        Home Office e Fábrica abrem um seletor para escolher os dias da semana.
+        Banco de Horas e Férias criam eventos diretamente na sua agenda do Microsoft Teams.
       </p>
     </div>
 

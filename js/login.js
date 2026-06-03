@@ -262,7 +262,8 @@ async function createCalendarEvent(type, date) {
 
   if (!paUrl) {
     // Modo dev: simula sucesso
-    showToast(`${type === 'home' ? '🏠' : '🏭'} ${p.label} registrado para ${dateFormatted}!`);
+    const icon = type === 'home' ? '🏠' : type === 'fabrica' ? '🏧' : '⏱️';
+    showToast(`${icon} ${p.label} registrado para ${dateFormatted}!`);
     return;
   }
 
@@ -281,7 +282,8 @@ async function createCalendarEvent(type, date) {
     });
 
     if (resp.ok) {
-      showToast(`${type === 'home' ? '🏠' : '🏭'} Evento criado na sua agenda do Teams para ${dateFormatted}!`);
+      const icon = type === 'home' ? '🏠' : type === 'fabrica' ? '🏧' : '⏱️';
+      showToast(`${icon} Evento criado na sua agenda do Teams para ${dateFormatted}!`);
       sendAuditEvent({ type: 'calendar_event_created', email: user.email, status: 'success',
         user_name: user.name, event_type: type, event_date: date });
     } else {

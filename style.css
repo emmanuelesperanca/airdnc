@@ -416,6 +416,67 @@ input:checked + .slider:before { transform:translateX(20px); }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .spin { display: inline-block; animation: spin .7s linear infinite; }
 
+/* ── Presence Date Picker ── */
+.ppicker-grid {
+  display: grid;
+  grid-template-columns: 48px repeat(5, 1fr);
+  gap: 5px;
+}
+.ppicker-col-hdr {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #94a3b8;
+  padding: 3px 0 8px;
+  font-family: 'Manrope', sans-serif;
+  letter-spacing: .04em;
+}
+.ppicker-week-lbl {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 10px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #94a3b8;
+  font-family: 'Manrope', sans-serif;
+  text-align: right;
+  padding-right: 6px;
+}
+.ppicker-day {
+  aspect-ratio: 1;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  transition: background .1s, border-color .1s, color .1s, transform .08s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  background: transparent;
+}
+.ppicker-day:not(.ppicker-past):not([disabled]):hover {
+  border-color: #a5b4fc;
+  background: #f5f3ff !important;
+  color: #4338ca !important;
+  transform: scale(1.07);
+}
+.ppicker-day:not(.ppicker-past):not([disabled]):active {
+  transform: scale(.95);
+}
+.ppicker-past { opacity: .3; cursor: not-allowed; }
+.ppicker-day-num { font-size: 14px; font-weight: 600; line-height: 1; }
+.ppicker-dot {
+  position: absolute;
+  bottom: 4px;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+}
+
 /* ── Login Screen ── */
 #login-overlay {
   position: fixed; inset: 0;

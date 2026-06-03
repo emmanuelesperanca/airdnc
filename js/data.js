@@ -131,10 +131,13 @@ const TEAM_MIN_AWAY = {
 
 // ─── Tipos de presença ───
 // eventTitle = prefixo usado nos eventos de dia-inteiro do Teams Calendar
+// isRange = true → seletor de período (início/fim); false → múltiplos dias avulsos
 const PRESENCE_TYPES = {
-  office:  { label: 'Escritório', icon: 'business', color: '#22c55e', eventTitle: null },
-  home:    { label: 'Home Office', icon: 'home_work', color: '#3b82f6', eventTitle: 'Home Office' },
-  fabrica: { label: 'Fábrica',    icon: 'factory',  color: '#f97316', eventTitle: 'Fábrica' },
+  office:  { label: 'Escritório',    icon: 'business',      color: '#22c55e', eventTitle: null,           isRange: false },
+  home:    { label: 'Home Office',   icon: 'home_work',     color: '#3b82f6', eventTitle: 'Home Office',  isRange: false },
+  fabrica: { label: 'Fábrica',       icon: 'factory',       color: '#f97316', eventTitle: 'Fábrica',      isRange: false },
+  banco:   { label: 'Banco de Horas',icon: 'schedule',      color: '#8b5cf6', eventTitle: 'Banco Horas',  isRange: false },
+  ferias:  { label: 'Férias',        icon: 'beach_access',  color: '#06b6d4', eventTitle: 'Férias',       isRange: true  },
 };
 
 // ═══════════════════════════════════════════════════════
