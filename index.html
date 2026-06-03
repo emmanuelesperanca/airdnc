@@ -464,10 +464,21 @@
       <input type="email" id="login-email" class="login-input" placeholder="nome@straumann.com"
         onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
-    <button id="login-btn" class="login-btn" onclick="doLogin()">Entrar</button>
+    <button id="login-btn" class="login-btn" onclick="doLogin()">Entrar via Teams</button>
     <div id="login-spinner" style="display:none;align-items:center;justify-content:center;gap:8px;color:#94a3b8;font-size:13px;">
       <span class="material-symbols-outlined spin" style="font-size:17px;">progress_activity</span>
-      Validando com o Teams...
+      Enviando solicitação...
+    </div>
+    <!-- Bloco de espera após o link ser enviado -->
+    <div id="login-waiting" style="display:none;flex-direction:column;align-items:center;gap:10px;width:100%;">
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="material-symbols-outlined" style="font-size:20px;color:#16a34a;">mark_email_read</span>
+          <span style="font-size:13px;font-weight:800;color:#15803d;">Link enviado com sucesso!</span>
+        </div>
+        <p style="font-size:12px;color:#166534;margin:0;">Abra o <strong>Microsoft Teams</strong> e clique no botão <strong>"Entrar no AirDnC"</strong> que o bot enviou para <span id="login-waiting-email" style="font-weight:800;"></span>.</p>
+      </div>
+      <button onclick="setLoginLoading(false)" style="background:none;border:none;font-size:12px;color:#94a3b8;cursor:pointer;text-decoration:underline;">Tentar com outro e-mail</button>
     </div>
     <div id="login-message" class="login-message" style="display:none;"></div>
     <p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:4px;">Straumann Group · Acesso restrito a colaboradores</p>

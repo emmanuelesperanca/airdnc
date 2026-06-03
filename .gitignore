@@ -4,6 +4,14 @@ config.js
 .env.*
 !.env.example
 
+# Ambiente Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
 # Dependências
 node_modules/
 

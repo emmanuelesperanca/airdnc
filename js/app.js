@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   seedDummyData();
   initDateLabel();
   renderDesks();
@@ -12,8 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshDashboard();
   refreshBookingsTable();
 
-  // Show login screen if no valid session
-  if (!checkLoginSession()) {
+  // 1º: verifica se há um magic link ?token= na URL (retorno do Teams)
+  const tokenHandled = await checkMagicToken();
+  // 2º: se não havia token, verifica sessão local
+  if (!tokenHandled && !checkLoginSession()) {
     showLoginScreen();
   }
 });
