@@ -4,6 +4,9 @@ config.js
 .env.*
 !.env.example
 
+# Certificados SSL
+nginx/certs/
+
 # Ambiente Python
 __pycache__/
 *.pyc

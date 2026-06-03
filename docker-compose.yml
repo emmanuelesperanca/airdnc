@@ -1,0 +1,39 @@
+services:
+
+  # ── FastAPI backend ──────────────────────────────────────────
+  api:
+    build: .
+    container_name: airdnc-api
+    env_file: .env
+    restart: unless-stopped
+    expose:
+      - "5000"
+    networks:
+      - airdnc-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ── Nginx reverse proxy + static files ──────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: airdnc-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/airdnc.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro      # certificado SSL
+      - .:/usr/share/nginx/html:ro              # arquivos estaticos
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - airdnc-net
+
+networks:
+  airdnc-net:
+    driver: bridge

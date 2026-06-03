@@ -1,0 +1,22 @@
+# Nao inclui no container da API arquivos desnecessarios
+.env
+.env.*
+config.js
+.git/
+.gitignore
+nginx/
+docker-compose.yml
+Dockerfile
+*.md
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+database/
+js/
+style.css
+index.html
+desks.py
+config.example.js
